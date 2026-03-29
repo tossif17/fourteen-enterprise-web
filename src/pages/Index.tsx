@@ -15,6 +15,7 @@ const Index = () => {
         {/* <FiftyFiftySection />
         <ProductCarousel /> */}
         <LargeHero />
+
         <BrandProfile/>
         <FeatureProducts/>
         <CardDefault/>

@@ -1,58 +1,170 @@
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { products as allProducts } from "@/data/products";
 
-const featuredProducts = allProducts.filter(p => p.isNew).slice(0, 6);
+interface Product {
+  id: number;
+  name: string;
+  brand: string;
+  category: string;
+  type: string;
+  description: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  hover_image?: string;
+  hoverImage?: string;
+  images?: string[];
+  isNew?: boolean;
+  is_new?: boolean;
+}
 
-const ProductCarousel = () => {
+interface ProductCarouselProps {
+  currentProduct?: Product;
+  mode?: "related" | "same-category";
+  title?: string;
+}
+
+const ProductCard = memo(({ product }: { product: Product }) => {
+  const isOnSale =
+    typeof product.oldPrice === "number" && product.oldPrice > product.price;
+
+  const isNewProduct = product.isNew || product.is_new;
+
   return (
-    <section className="w-full mb-16 px-6">
-      <Carousel
-        opts={{ align: "start", loop: false }}
-        className="w-full"
-      >
-        <CarouselContent>
-          {featuredProducts.map((product) => (
-            <CarouselItem
-              key={product.id}
-              className="basis-1/2 md:basis-1/3 lg:basis-1/4 pr-2 md:pr-4"
-            >
-              <Link to={`/product/${product.id}`}>
-                <Card className="border-none shadow-none bg-transparent group">
-                  <CardContent className="p-0">
-                    <div className="aspect-square mb-3 overflow-hidden bg-muted/30 relative flex items-center justify-center transition-all duration-300 group-hover:bg-accent/60 group-hover:shadow-lg">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="text-center p-4 relative z-10 transition-transform duration-300 group-hover:scale-110">
-                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-muted flex items-center justify-center transition-colors duration-300 group-hover:bg-primary/10">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1" stroke="currentColor" className="w-8 h-8 text-muted-foreground transition-colors duration-300 group-hover:text-primary">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-                          </svg>
-                        </div>
-                        <p className="text-xs text-muted-foreground font-light">{product.category}</p>
-                      </div>
-                      <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium bg-foreground text-background">
-                        NEW
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-light text-muted-foreground">{product.brand}</p>
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-medium text-foreground">{product.name}</h3>
-                        <p className="text-sm font-light text-foreground">{product.priceFormatted}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
+    <Link
+      to={`/product/${product.id}`}
+      className="group block"
+      aria-label={`View ${product.name}`}
+    >
+      <div className="relative mb-3 overflow-hidden rounded-xl bg-[#f7f7f7] aspect-square">
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+        />
+
+        <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
+          {isOnSale && (
+            <span className="bg-[#1a5c3a] px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-white">
+              Sale
+            </span>
+          )}
+
+          {isNewProduct && (
+            <span className="bg-[#1a1a2e] px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-[#e8c96d]">
+              New
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-1 px-0.5">
+        <p className="text-[10px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
+          {product.brand}
+        </p>
+
+        <h3 className="line-clamp-2 min-h-[2.4rem] text-xs leading-snug text-foreground">
+          {product.name}
+        </h3>
+
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          {isOnSale && (
+            <span className="text-[11px] text-muted-foreground line-through">
+              ${product.oldPrice!.toFixed(2)}
+            </span>
+          )}
+
+          <span className="text-xs text-foreground">
+            ${product.price.toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+});
+
+ProductCard.displayName = "ProductCard";
+
+const ProductCarousel = ({
+  currentProduct,
+  mode = "related",
+  title,
+}: ProductCarouselProps) => {
+  const filtered = useMemo(() => {
+    if (!currentProduct) {
+      return allProducts.filter((p) => p.isNew || p.isNew).slice(0, 20);
+    }
+
+    if (mode === "related") {
+      const results = allProducts.filter(
+        (p) =>
+          p.id !== currentProduct.id &&
+          (p.brand === currentProduct.brand ||
+            p.type === currentProduct.type ||
+            p.category === currentProduct.category)
+      );
+
+      return results
+        .sort((a, b) => {
+          const scoreA =
+            (a.brand === currentProduct.brand ? 3 : 0) +
+            (a.type === currentProduct.type ? 2 : 0) +
+            (a.category === currentProduct.category ? 1 : 0);
+
+          const scoreB =
+            (b.brand === currentProduct.brand ? 3 : 0) +
+            (b.type === currentProduct.type ? 2 : 0) +
+            (b.category === currentProduct.category ? 1 : 0);
+
+          return scoreB - scoreA;
+        })
+        .slice(0, 12);
+    }
+
+    if (mode === "same-category") {
+      const results = allProducts.filter(
+        (p) =>
+          p.id !== currentProduct.id &&
+          p.category === currentProduct.category
+      );
+
+      return results
+        .sort((a, b) => {
+          if (
+            a.brand === currentProduct.brand &&
+            b.brand !== currentProduct.brand
+          )
+            return -1;
+          if (
+            b.brand === currentProduct.brand &&
+            a.brand !== currentProduct.brand
+          )
+            return 1;
+          return 0;
+        })
+        .slice(0, 12);
+    }
+
+    return [];
+  }, [currentProduct, mode]);
+
+  if (filtered.length === 0) return null;
+
+  return (
+    <section className="w-full mb-16 px-4 sm:px-6">
+      {title && (
+        <p className="mb-4 text-sm font-light text-foreground">{title}</p>
+      )}
+
+      <div className="grid grid-cols-3 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-4 xl:gap-x-4 xl:gap-y-8">
+        {filtered.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
     </section>
   );
 };

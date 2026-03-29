@@ -15,61 +15,65 @@ const Shop = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  // ✅ Infinite price range
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, Infinity]);
 
   const filteredProducts = useMemo(() => {
     let filtered = [...allProducts];
 
     // =====================
-    // Search
+    // SEARCH
     // =====================
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.type.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.type.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
       );
     }
 
     // =====================
-    // Category filter
+    // CATEGORY
     // =====================
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(p =>
+      filtered = filtered.filter((p) =>
         selectedCategories.includes(p.category)
       );
     }
 
     // =====================
-    // Brand filter
+    // BRAND
     // =====================
     if (selectedBrands.length > 0) {
-      filtered = filtered.filter(p =>
+      filtered = filtered.filter((p) =>
         selectedBrands.includes(p.brand)
       );
     }
 
     // =====================
-    // Type filter
+    // TYPE
     // =====================
     if (selectedTypes.length > 0) {
-      filtered = filtered.filter(p =>
+      filtered = filtered.filter((p) =>
         selectedTypes.includes(p.type)
       );
     }
 
     // =====================
-    // Price filter
+    // PRICE (INFINITE SAFE)
     // =====================
     filtered = filtered.filter(
-      p => p.price >= priceRange[0] && p.price <= priceRange[1]
+      (p) =>
+        p.price >= priceRange[0] &&
+        (priceRange[1] === Infinity || p.price <= priceRange[1])
     );
 
     // =====================
-    // Sorting
+    // SORTING
     // =====================
     switch (sortBy) {
       case "price-low":
@@ -86,8 +90,11 @@ const Shop = () => {
 
       case "newest":
         filtered.sort(
-          (a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0)
+          (a, b) => Number(b.isNew) - Number(a.isNew)
         );
+        break;
+
+      default:
         break;
     }
 
@@ -106,8 +113,21 @@ const Shop = () => {
       <Header />
 
       <main className="pt-6 mt-16">
-        {/* Shop title instead of category */}
-        <CategoryHeader category="Shop" />
+       <CategoryHeader
+  category="Shop"
+  selectedCategories={selectedCategories}
+  onCategoryClick={(cat) => {
+    if (cat === "all") {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(
+        selectedCategories.includes(cat)
+          ? selectedCategories.filter((c) => c !== cat)
+          : [...selectedCategories, cat]
+      );
+    }
+  }}
+/>
 
         <FilterSortBar
           filtersOpen={filtersOpen}
@@ -127,6 +147,7 @@ const Shop = () => {
           setPriceRange={setPriceRange}
         />
 
+        {/* ✅ FINAL OUTPUT */}
         <ProductGrid products={filteredProducts} />
       </main>
 

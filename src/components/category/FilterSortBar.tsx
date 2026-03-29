@@ -114,7 +114,7 @@ const FilterSortBar = ({
     setSelectedCategories([]);
     setSelectedBrands([]);
     setSelectedTypes([]);
-    setPriceRange([0, 10000]);
+    setPriceRange([0, Infinity]);
     setSearchQuery("");
   };
 

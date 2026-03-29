@@ -8,29 +8,31 @@ import { products as allProducts } from "@/data/products";
 const FeatureProducts = () => {
   const { category } = useParams<{ category?: string }>();
 
-  // Only filter by URL category (optional)
   const filteredProducts = useMemo(() => {
-    if (!category) return allProducts;
+    let result = allProducts;
 
-    return allProducts.filter(
-      (p) =>
-        p.brand.toLowerCase() === category.toLowerCase() ||
-        p.category.toLowerCase() === category.toLowerCase()
-    );
+    if (category) {
+      result = result.filter(
+        (p) =>
+          p.brand.toLowerCase() === category.toLowerCase() ||
+          p.category.toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    // ✅ Only show 6
+    return result.slice(0, 8);
   }, [category]);
 
   return (
     <div className="min-h-screen bg-background">
-
       <main className="pt-10 px-6">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl font-bold text-gray-900">FEATURED PRODUCTS</h2>
+          <p className="mt-4 text-gray-500 max-w-2xl mx-auto">
+            High-Performance Solutions for Marine & Industrial Automation
+          </p>
+        </div>
 
-      <div className="text-center mb-14">
-        <h2 className="text-4xl font-bold text-gray-900">FEATURED PRODUCTS</h2>
-        <p className="mt-4 text-gray-500 max-w-2xl mx-auto">
-          High-Performance Solutions for Marine & Industrial Automation
-        </p>
-      </div>
-        {/* Product Grid */}
         {filteredProducts.length > 0 ? (
           <ProductGrid products={filteredProducts} />
         ) : (

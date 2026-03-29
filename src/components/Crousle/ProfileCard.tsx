@@ -25,10 +25,6 @@ export default function ProfileCard({
         />
       </div>
 
-      {/* Name */}
-      <h3 className="mt-4 font-semibold text-lg text-gray-800">
-        {name}
-      </h3>
     </div>
   );
 }
