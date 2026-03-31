@@ -5,6 +5,7 @@ import ContactAnimated from "@/components/ContactAnimated/ContactAnimated";
 import CardDefault from "@/components/CardItem/CardDefault";
 import FeatureProducts from "@/components/FeatureProducts/FeatureProducts";
 import Footer from "@/components/footer/Footer";
+import ShoeGrid from "@/components/grid/ShoeGrid";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
 
         <BrandProfile/>
         <FeatureProducts/>
+        <ShoeGrid/>
         <CardDefault/>
         <ContactAnimated/>
         <Footer/>
